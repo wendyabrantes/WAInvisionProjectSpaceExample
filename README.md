@@ -15,12 +15,14 @@ WAInvisionProjectSpaceExample is a demo on How to recreate a custom UI inspired 
 Open and run the WAInvisionProjectSpaceExample project in Xcode to see the interaction in action.
 
 ## Tutorial
-Check my tutorial explanation on medium
+Tutorial on medium
+
 PART 1 - Parallax Effect
 https://medium.com/@wendyabrantes/part-1-creating-a-custom-animation-inspired-be-invision-projects-space-65bf83a3b12b#.clc7somcc
+
 PART 2 - Custom View Controller Transition
 https://medium.com/@wendyabrantes/part-2-creating-a-custom-animation-inspired-by-invision-projects-space-28b9afb80a7e#.odjxnp37f
-coming up soon...
+
 ## Contact
 
 Wendy Abrantes
