@@ -2,7 +2,7 @@
 
 WAInvisionProjectSpaceExample is a demo of How to create a custom animation inspired Invision Projects Space.
 
-![alt tag](https://raw.githubusercontent.com/wendyabrantes/WAInvisionProjectSpaceExample/master/invision_space_project_final.gif)
+![alt tag](https://raw.githubusercontent.com/wendyabrantes/WAInvisionProjectSpaceExample/master/blob/invision_space_project_final.gif)
 
 ## Requirements
 * Xcode 8.2.1 or higher
