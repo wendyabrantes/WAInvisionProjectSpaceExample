@@ -87,8 +87,6 @@ class InvisionProjectSpaceCollectionViewController: UICollectionViewController, 
       detailViewController.modalPresentationStyle = .custom
       present(detailViewController, animated: true, completion: nil)
     }
-  
-  var transition:InvisionProjectSpaceTranstion?
 }
 
 extension InvisionProjectSpaceCollectionViewController {
