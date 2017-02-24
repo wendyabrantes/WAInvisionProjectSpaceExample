@@ -8,12 +8,12 @@
 
 import UIKit
 
-class InvisionProjectSpaceTranstion: NSObject, UIViewControllerAnimatedTransitioning {
+class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransitioning {
   
-  private var isBeingDismissed = false
+  private var isDismissed = false
   
-  init(isBeingDismissed: Bool) {
-    self.isBeingDismissed = isBeingDismissed
+  init(isDismissed: Bool) {
+    self.isDismissed = isDismissed
     super.init()
   }
   
@@ -22,7 +22,7 @@ class InvisionProjectSpaceTranstion: NSObject, UIViewControllerAnimatedTransitio
   }
 
   func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-    if(isBeingDismissed){
+    if(isDismissed){
       dimissController(transitionContext: transitionContext)
     } else {
       presentController(transitionContext: transitionContext)
@@ -42,6 +42,7 @@ class InvisionProjectSpaceTranstion: NSObject, UIViewControllerAnimatedTransitio
     return cards
   }
   
+  
   func presentController(transitionContext: UIViewControllerContextTransitioning){
     guard let fromVC = transitionContext.viewController(forKey: .from) as? InvisionProjectSpaceCollectionViewController else { return }
     guard let toVC = transitionContext.viewController(forKey: .to) else { return }
@@ -53,27 +54,30 @@ class InvisionProjectSpaceTranstion: NSObject, UIViewControllerAnimatedTransitio
     let finalFrame = transitionContext.finalFrame(for: toVC)
     toVC.view.frame = finalFrame
     
-    //we get all the visibles cell and clone them
     var cards = [CardView]()
     var selectedCard: CardView?
     
+    //1. Get all the visibles cell and clone them
     if let visibleCells = fromVC.collectionView?.visibleCells as? [InvisionProjectSpaceViewCell] {
       cards = cloneVisibleCardViews(collectionViewController: fromVC, visibleCells: visibleCells)
+      //2. Get a reference on the selected card view
       if let currentCell = fromVC.selectedCell as? InvisionProjectSpaceViewCell, let indexCard = visibleCells.index(of: currentCell) {
         selectedCard = cards[indexCard]
       }
     }
-    
-    //add all the card view to the screen
+    //3. Add the card view to the container view to reproduce the collection view layout
     for card in cards {
       containerView.addSubview(card)
     }
     
-    //WE PRESET THE CARD SETTING FOR FULL SCREEN MODE
+    //4. Preset the selected cell parameter before starting the animation
+    //We want the image to animate the height from 70% of the frame to 50%
+    //We want the logo to animate from center to top of the image view
+    //Because of the parallax effect its easier to tell the card view not to animate on layoutSubview and to do it manually
     if let selectedCard = selectedCard {
-      selectedCard.isMainImageAnimationEnable = false
       selectedCard.imageHeightRatio = 0.5
       selectedCard.logoCenterYRatio = 0.3
+      selectedCard.isMainImageAnimationEnable = false
     }
     
     UIViewPropertyAnimator.runningPropertyAnimator(withDuration: duration,
@@ -81,12 +85,14 @@ class InvisionProjectSpaceTranstion: NSObject, UIViewControllerAnimatedTransitio
                                                    options: [.curveEaseOut, .layoutSubviews],
                                                    animations: {
                                                     
+                                                    //5. animate the selected item full screen
                                                     if let selectedCard = selectedCard {
                                                       selectedCard.frame = finalFrame
                                                       selectedCard.mainImageView.frame = CGRect(origin: .zero, size: CGSize(width:finalFrame.width, height:finalFrame.height*selectedCard.imageHeightRatio))
                                                       selectedCard.containerBottomView.alpha = 0
                                                     }
                                                     
+                                                    //6. slide off by translating the current visible width amouth left or right
                                                     for card in cards {
                                                       if card != selectedCard {
                                                         let instersection = card.frame.intersection(finalFrame)
@@ -101,7 +107,6 @@ class InvisionProjectSpaceTranstion: NSObject, UIViewControllerAnimatedTransitio
       for card in cards {
         card.removeFromSuperview()
       }
-      fromVC.collectionView?.alpha = 1.0
       containerView.addSubview(toVC.view)
       transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
     }

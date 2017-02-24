@@ -9,11 +9,10 @@
 import UIKit
 
 class CardView: UIView {
-  var mainImageView = UIImageView()
-  var logoImageView = UIImageView()
   
   var contentView = UIView()
-  
+  var mainImageView = UIImageView()
+  var logoImageView = UIImageView()
   var containerBottomView = UIView()
   private var titleLabel = UILabel()
   private var nbOfProjectsLabel = UILabel()
@@ -24,23 +23,20 @@ class CardView: UIView {
   let paddingLeft: CGFloat = 20
   
   private let logoSize = CGSize(width: 70, height: 70)
+  
   var imageHeightRatio: CGFloat = 0.7
   var logoCenterYRatio: CGFloat = 0.5
   
   override init(frame: CGRect) {
     super.init(frame: frame)
-    translatesAutoresizingMaskIntoConstraints = true
     backgroundColor = UIColor.white
     
-    //shawdow radius
     layer.cornerRadius = cornerRadius
     layer.shadowColor = UIColor.black.cgColor
     layer.shadowOffset = CGSize(width:0, height:10)
     layer.shadowRadius = 10
     layer.shadowOpacity = 0.1
     layer.masksToBounds = false
-    //    layer.shouldRasterize = true
-    //    layer.rasterizationScale = UIScreen.main.scale
     
     contentView.frame = CGRect(origin: .zero, size: frame.size)
     contentView.layer.masksToBounds = true

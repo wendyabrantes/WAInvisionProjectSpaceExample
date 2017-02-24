@@ -91,10 +91,10 @@ class InvisionProjectSpaceCollectionViewController: UICollectionViewController, 
 
 extension InvisionProjectSpaceCollectionViewController {
   func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-    return InvisionProjectSpaceTranstion(isBeingDismissed: false)
+    return InvisionProjectSpaceTransition(isDismissed: false)
   }
   func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-    return InvisionProjectSpaceTranstion(isBeingDismissed: true)
+    return InvisionProjectSpaceTransition(isDismissed: true)
   }
 }
 
