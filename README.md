@@ -1,6 +1,6 @@
 # WAInvisionProjectSpaceExample
 
-WAInvisionProjectSpaceExample is a demo of How to create a custom animation inspired Invision Projects Space.
+WAInvisionProjectSpaceExample is a demo on How to recreate a custom UI inspired by Invision Projects Space.
 
 ![alt tag](https://raw.githubusercontent.com/wendyabrantes/WAInvisionProjectSpaceExample/master/WAInvisionProjectSpaceExample.gif)
 
