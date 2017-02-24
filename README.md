@@ -17,9 +17,9 @@ Open and run the WAInvisionProjectSpaceExample project in Xcode to see the inter
 ## Tutorial
 Check my tutorial explanation on medium
 PART 1 - Parallax Effect
-https://medium.com/p/65bf83a3b12b
-PART 1 - Custom UIViewController transition
-https://medium.com/p/28b9afb80a7e
+https://medium.com/@wendyabrantes/part-1-creating-a-custom-animation-inspired-be-invision-projects-space-65bf83a3b12b#.clc7somcc
+PART 2 - Custom UIViewController transition
+coming up soon...
 ## Contact
 
 Wendy Abrantes
