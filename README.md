@@ -2,7 +2,7 @@
 
 WAInvisionProjectSpaceExample is a demo of How to create a custom animation inspired Invision Projects Space.
 
-![alt tag](https://raw.githubusercontent.com/wendyabrantes/WACustomSwitch/master/invision_space_project_final.gif)
+![alt tag](https://raw.githubusercontent.com/wendyabrantes/WAInvisionProjectSpaceExample/master/invision_space_project_final.gif)
 
 ## Requirements
 * Xcode 8.2.1 or higher
@@ -17,9 +17,9 @@ Open and run the WAInvisionProjectSpaceExample project in Xcode to see the inter
 ## Tutorial
 Check my tutorial explanation on medium
 PART 1 - Parallax Effect
-https://medium.com/p/65bf83a3b12b/edit
+https://medium.com/p/65bf83a3b12b
 PART 1 - Custom UIViewController transition
-https://medium.com/p/28b9afb80a7e/edit
+https://medium.com/p/28b9afb80a7e
 ## Contact
 
 Wendy Abrantes
