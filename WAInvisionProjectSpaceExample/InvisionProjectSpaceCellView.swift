@@ -17,9 +17,7 @@ class InvisionProjectSpaceViewCell : UICollectionViewCell {
     didSet {
       let width = self.frame.width
       let maxOffset = -width/3 - (width/3)
-      var frame = cardView.mainImageView.frame
-      frame.origin.x = maxOffset * parallaxValue;
-      cardView.mainImageView.frame.origin.x = frame.origin.x
+      cardView.mainImageView.frame.origin.x = maxOffset * parallaxValue
     }
   }
 
