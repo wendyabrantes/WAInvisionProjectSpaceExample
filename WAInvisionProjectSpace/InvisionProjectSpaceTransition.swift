@@ -68,6 +68,11 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
       containerView.addSubview(cell)
     }
     
+    var selectedOriginalFrame: CGRect = .zero
+    if let selectedCell = copyCells.selectedCell {
+      selectedOriginalFrame = selectedCell.frame
+    }
+    
     //3. hide the current collection view
     fromVC.view.isHidden = true
     UIViewPropertyAnimator.runningPropertyAnimator(withDuration: duration,
@@ -84,10 +89,11 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
                                                     //5. We slide all other cells off the screen
                                                     for cell in copyCells.cells {
                                                       if cell != copyCells.selectedCell {
-                                                        let instersection = finalFrame.intersection(cell.frame)
-                                                        var translateX = instersection.width+20
-                                                        if cell.frame.minX < copyCells.selectedCell!.frame.minX {
-                                                          translateX = -translateX
+                                                        var translateX: CGFloat = 0
+                                                        if cell.frame.minX < selectedOriginalFrame.minX {
+                                                          translateX = -(cell.frame.maxX + 20)
+                                                        } else {
+                                                          translateX = finalFrame.width - (cell.frame.minX - 20)
                                                         }
                                                         cell.transform = CGAffineTransform(translationX: translateX, y: 0)
                                                       }
@@ -128,10 +134,11 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
           cell.frame = globalFrame
         }
         
-        let instersection = finalFrame.intersection(cell.frame)
-        var translateX = instersection.width+20
+        var translateX: CGFloat = 0
         if cell.frame.minX < selectedOriginalFrame.minX {
-          translateX = -translateX
+          translateX = -(cell.frame.maxX + 20)
+        } else {
+          translateX = finalFrame.width - (cell.frame.minX - 20)
         }
         cell.transform = CGAffineTransform(translationX: translateX, y: 0)
       }
