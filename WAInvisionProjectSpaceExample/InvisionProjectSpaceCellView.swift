@@ -8,16 +8,20 @@
 
 import UIKit
 
-class InvisionProjectSpaceViewCell : UICollectionViewCell {
+class InvisionProjectSpaceViewCell : UICollectionViewCell, CardViewProtocol, NSCopying {
   static let reuseIdentifier = "InvisionProjectSpaceViewCell"
  
-  var cardView: CardView
+  var isFullScreen: Bool = false {
+    didSet {
+      cardView.isFullScreen = isFullScreen
+    }
+  }
+  
+  var cardView = CardView(frame: .zero)
   
   var parallaxValue: CGFloat = 0 {
     didSet {
-      let width = self.frame.width
-      let maxOffset = -width/3 - (width/3)
-      cardView.mainImageView.frame.origin.x = maxOffset * parallaxValue
+      cardView.parallax = parallaxValue
     }
   }
 
@@ -30,9 +34,7 @@ class InvisionProjectSpaceViewCell : UICollectionViewCell {
   }
   
   override init(frame: CGRect) {
-    cardView = CardView(frame: CGRect(origin: .zero, size: frame.size))
     super.init(frame: frame)
-
     contentView.addSubview(cardView)
   }
 
@@ -48,7 +50,18 @@ class InvisionProjectSpaceViewCell : UICollectionViewCell {
   
   override func layoutSubviews() {
     super.layoutSubviews()
-    cardView.updateFrames()
+    cardView.frame = CGRect(origin: .zero, size: frame.size)
+    cardView.layoutSubviews()
   }
+  
+  func copy(with zone: NSZone? = nil) -> Any {
+    let cardView = self.cardView.copy() as! CardView
+    let instance = InvisionProjectSpaceViewCell(frame: self.frame)
+    instance.cardView.removeFromSuperview()
+    instance.cardView = cardView
+    instance.contentView.addSubview(cardView)
+    return instance
+  }
+
 }
 

@@ -15,19 +15,45 @@ struct ProjectData {
   var nbProjects: Int
 }
 
+protocol CardViewControllerProtocol {
+  var visibleCards: [CardViewProtocol] { get }
+  var selectedCardView: CardViewProtocol? { get }  
+}
+
 class InvisionProjectSpaceCollectionViewController: UICollectionViewController, UIViewControllerTransitioningDelegate {
 
     let margin: CGFloat = 35
     
     var listCellSize = CGSize.zero
     var detailCellSize = CGSize.zero
-    var selectedCell: UICollectionViewCell?
+    var selectedCell: InvisionProjectSpaceViewCell?
   
     override var prefersStatusBarHidden: Bool {
       return true
     }
   
+    var selectedCardView: CardViewProtocol? {
+      get {
+        if let current = self.selectedCell as? CardViewProtocol {
+          return current
+        }
+        return nil
+      }
+    }
+    var visibleCards: [CardViewProtocol] {
+      get {
+        if let cells = collectionView?.visibleCells {
+          let cards = cells.map { $0 as! CardViewProtocol }
+          return cards
+        }
+        return [CardViewProtocol]()
+      }
+    }
+
     private var stubbs = [
+      ProjectData(mainImage: UIImage(named:"relate")!, logoImage: UIImage(named:"relate_logo")!, title: "Related UI Kit", nbProjects: 10),
+      ProjectData(mainImage: UIImage(named:"craft")!, logoImage: UIImage(named:"craft_logo")!, title: "InVision Craft", nbProjects: 7),
+      ProjectData(mainImage: UIImage(named:"nike")!, logoImage: UIImage(named:"nike_plus_logo")!, title: "Nike Running", nbProjects: 5),
       ProjectData(mainImage: UIImage(named:"relate")!, logoImage: UIImage(named:"relate_logo")!, title: "Related UI Kit", nbProjects: 10),
       ProjectData(mainImage: UIImage(named:"craft")!, logoImage: UIImage(named:"craft_logo")!, title: "InVision Craft", nbProjects: 7),
       ProjectData(mainImage: UIImage(named:"nike")!, logoImage: UIImage(named:"nike_plus_logo")!, title: "Nike Running", nbProjects: 5)
@@ -81,12 +107,13 @@ class InvisionProjectSpaceCollectionViewController: UICollectionViewController, 
       //present the Detail View Controller
       let project = stubbs[indexPath.row]
       let detailViewController = InvisionProjectDetailViewController(project: project)
-      selectedCell = collectionView.cellForItem(at: indexPath)
+      selectedCell = collectionView.cellForItem(at: indexPath) as! InvisionProjectSpaceViewCell?
       
       detailViewController.transitioningDelegate = self
       detailViewController.modalPresentationStyle = .custom
       present(detailViewController, animated: true, completion: nil)
     }
+
 }
 
 extension InvisionProjectSpaceCollectionViewController {

@@ -18,7 +18,7 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
   }
   
   func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-    return 0.3
+    return 0.4
   }
 
   func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
@@ -29,24 +29,27 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     }
   }
   
-  func cloneVisibleCardViews(collectionViewController: UICollectionViewController, visibleCells: [InvisionProjectSpaceViewCell]) -> [CardView]{
-    var cards = [CardView]()
+  func copyVisibleCells(visibleCells: [UICollectionViewCell], currentSelected: InvisionProjectSpaceViewCell?) -> (cells:[InvisionProjectSpaceViewCell], selectedCell: InvisionProjectSpaceViewCell?) {
+    
+    var cells = [InvisionProjectSpaceViewCell]()
+    var selectedCell: InvisionProjectSpaceViewCell?
+    
+    guard let visibleCells = visibleCells as? [InvisionProjectSpaceViewCell] else { return (cells, selectedCell) }
     
     for cell in visibleCells {
-      let copyOfCardView = cell.cardView.copy() as! CardView
-      if let globalFrame = collectionViewController.collectionView?.convert(cell.frame, to: nil) {
-        copyOfCardView.frame = globalFrame
+      let copyCell = cell.copy() as! InvisionProjectSpaceViewCell
+      cells.append(copyCell)
+      
+      if cell == currentSelected {
+        selectedCell = copyCell
       }
-      cards.append(copyOfCardView)
     }
-    return cards
+    return (cells, selectedCell)
   }
   
-  
-  func presentController(transitionContext: UIViewControllerContextTransitioning){
+  func presentController(transitionContext: UIViewControllerContextTransitioning) {
     guard let fromVC = transitionContext.viewController(forKey: .from) as? InvisionProjectSpaceCollectionViewController else { return }
     guard let toVC = transitionContext.viewController(forKey: .to) else { return }
-    
     let duration = transitionDuration(using: transitionContext)
     let containerView = transitionContext.containerView
     containerView.backgroundColor = UIColor.white
@@ -54,59 +57,43 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     let finalFrame = transitionContext.finalFrame(for: toVC)
     toVC.view.frame = finalFrame
     
-    var cards = [CardView]()
-    var selectedCard: CardView?
+    let copyCells = copyVisibleCells(visibleCells: fromVC.collectionView!.visibleCells, currentSelected: fromVC.selectedCell)
     
-    //1. Get all the visibles cell and clone them
-    if let visibleCells = fromVC.collectionView?.visibleCells as? [InvisionProjectSpaceViewCell] {
-      cards = cloneVisibleCardViews(collectionViewController: fromVC, visibleCells: visibleCells)
-      //2. Get a reference on the selected card view
-      if let currentCell = fromVC.selectedCell as? InvisionProjectSpaceViewCell, let indexCard = visibleCells.index(of: currentCell) {
-        selectedCard = cards[indexCard]
+    for cell in copyCells.cells {
+      if let globalFrame = fromVC.collectionView?.convert(cell.frame, to: nil) {
+        cell.frame = globalFrame
       }
-    }
-    //3. Add the card view to the container view to reproduce the collection view layout
-    for card in cards {
-      containerView.addSubview(card)
+      containerView.addSubview(cell)
     }
     
-    //4. Preset the selected cell parameter before starting the animation
-    //We want the image to animate the height from 70% of the frame to 50%
-    //We want the logo to animate from center to top of the image view
-    //Because of the parallax effect its easier to tell the card view not to animate on layoutSubview and to do it manually
-    if let selectedCard = selectedCard {
-      selectedCard.imageHeightRatio = 0.5
-      selectedCard.logoCenterYRatio = 0.3
-      selectedCard.isMainImageAnimationEnable = false
-    }
-    
+    fromVC.view.isHidden = true
     UIViewPropertyAnimator.runningPropertyAnimator(withDuration: duration,
                                                    delay: 0.0,
                                                    options: [.curveEaseOut, .layoutSubviews],
                                                    animations: {
                                                     
-                                                    //5. animate the selected item full screen
-                                                    if let selectedCard = selectedCard {
-                                                      selectedCard.frame = finalFrame
-                                                      selectedCard.mainImageView.frame = CGRect(origin: .zero, size: CGSize(width:finalFrame.width, height:finalFrame.height*selectedCard.imageHeightRatio))
-                                                      selectedCard.containerBottomView.alpha = 0
+                                                    //set the template to fullscreen and animate the frame
+                                                    if let selectedCell = copyCells.selectedCell {
+                                                      selectedCell.isFullScreen = true
+                                                      selectedCell.frame = finalFrame
                                                     }
                                                     
-                                                    //6. slide off by translating the current visible width amouth left or right
-                                                    for card in cards {
-                                                      if card != selectedCard {
-                                                        let instersection = card.frame.intersection(finalFrame)
+                                                    //We slide all other cells off the screen
+                                                    for cell in copyCells.cells {
+                                                      if cell != copyCells.selectedCell {
+                                                        let instersection = finalFrame.intersection(cell.frame)
                                                         var translateX = instersection.width+20
-                                                        if card.frame.minX < selectedCard!.frame.minX {
+                                                        if cell.frame.minX < copyCells.selectedCell!.frame.minX {
                                                           translateX = -translateX
                                                         }
-                                                        card.transform = CGAffineTransform(translationX: translateX, y: 0)
+                                                        cell.transform = CGAffineTransform(translationX: translateX, y: 0)
                                                       }
                                                     }
     }) { (position) in
-      for card in cards {
-        card.removeFromSuperview()
+      for cell in copyCells.cells {
+        cell.removeFromSuperview()
       }
+      fromVC.view.isHidden = false
       containerView.addSubview(toVC.view)
       transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
     }
@@ -114,78 +101,65 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
   
   func dimissController(transitionContext: UIViewControllerContextTransitioning) {
     guard let fromVC = transitionContext.viewController(forKey: .from) else { return }
-    guard let toVC = transitionContext.viewController(forKey: .to) as? InvisionProjectSpaceCollectionViewController  else { return }
+    guard let toVC = transitionContext.viewController(forKey: .to) as? InvisionProjectSpaceCollectionViewController else { return }
     
     let duration = transitionDuration(using: transitionContext)
     let containerView = transitionContext.containerView
-    
+
     let finalFrame = transitionContext.finalFrame(for: toVC)
     toVC.view.frame = finalFrame
     
-    //we need to get all the visible cell and clone them
-    var cards = [CardView]()
-    var selectedCard: CardView?
+    let copyCells = copyVisibleCells(visibleCells: toVC.collectionView!.visibleCells, currentSelected: toVC.selectedCell)
     
-    var finalCardFrame = CGRect.zero
-    var finalImageFrame = CGRect.zero
-    
-    if let visibleCells = toVC.collectionView?.visibleCells as? [InvisionProjectSpaceViewCell] {
-      cards = cloneVisibleCardViews(collectionViewController: toVC, visibleCells: visibleCells)
-      
-      if let currentCell = toVC.selectedCell as? InvisionProjectSpaceViewCell,
-        let indexCard = visibleCells.index(of: currentCell) {
-
-        selectedCard = cards[indexCard]
-          
-        finalCardFrame = selectedCard!.frame
-        finalImageFrame = selectedCard!.mainImageView.frame
-        
-        //set the current card view to show full screen
-        selectedCard!.imageHeightRatio = 0.5
-        selectedCard!.logoCenterYRatio = 0.3
-        selectedCard!.isMainImageAnimationEnable = false
-        selectedCard!.frame = fromVC.view.frame
-        selectedCard!.mainImageView.frame = CGRect(origin: .zero, size: CGSize(width:fromVC.view.frame.width, height:fromVC.view.frame.height*selectedCard!.imageHeightRatio))
-        selectedCard!.containerBottomView.alpha = 0
-        selectedCard!.layoutSubviews() //re layout the subviews
-      }
+    var selectedOriginalFrame: CGRect = .zero
+    if let selectedCell = copyCells.selectedCell {
+      selectedOriginalFrame = toVC.collectionView?.convert(selectedCell.frame, to: nil) ?? .zero
+      //we set the current selected cell to full screen template
+      selectedCell.isFullScreen = true
+      selectedCell.frame = fromVC.view.frame
     }
     
-    for card in cards {
-      if card != selectedCard {
-        let instersection = card.frame.intersection(finalFrame)
+    for cell in copyCells.cells {
+      //all other cell need to be slide of the screen
+      if cell != copyCells.selectedCell {
+        if let globalFrame = toVC.collectionView?.convert(cell.frame, to: nil) {
+          cell.frame = globalFrame
+        }
+        
+        let instersection = finalFrame.intersection(cell.frame)
         var translateX = instersection.width+20
-        if card.frame.minX < finalCardFrame.minX {
+        if cell.frame.minX < selectedOriginalFrame.minX {
           translateX = -translateX
         }
-        card.transform = CGAffineTransform(translationX: translateX, y: 0)
+        cell.transform = CGAffineTransform(translationX: translateX, y: 0)
       }
-      containerView.addSubview(card)
+      containerView.addSubview(cell)
     }
     
     fromVC.view.removeFromSuperview()
-    //we preset the setting for the
-    selectedCard!.imageHeightRatio = 0.7
-    selectedCard!.logoCenterYRatio = 0.5
-    
+    toVC.view.isHidden = true
+    copyCells.selectedCell?.layoutSubviews()
     UIViewPropertyAnimator.runningPropertyAnimator(withDuration: duration,
                                                    delay: 0.0,
                                                    options: [.curveEaseOut, .layoutSubviews],
                                                    animations: {
-                                                    
-                                                    if let selectedCard = selectedCard {
-                                                      selectedCard.frame = finalCardFrame
-                                                      selectedCard.mainImageView.frame = finalImageFrame
-                                                      selectedCard.containerBottomView.alpha = 1
+
+                                                    //animate to card view state
+                                                    if let selectedCell = copyCells.selectedCell {
+                                                      selectedCell.isFullScreen = false
+                                                      selectedCell.frame = selectedOriginalFrame
                                                     }
-                                                    for card in cards {
-                                                      if card != selectedCard {
-                                                        card.transform = CGAffineTransform(translationX: 0, y: 0)
+                                                    
+                                                    for cell in copyCells.cells {
+                                                      if cell != copyCells.selectedCell {
+                                                        cell.transform = CGAffineTransform(translationX: 0, y: 0)
                                                       }
                                                     }
-                                                    
     }) { (position) in
-      selectedCard!.isMainImageAnimationEnable = true
+      for cell in copyCells.cells {
+        cell.removeFromSuperview()
+      }
+      toVC.view.isHidden = false
       transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
     }
   }

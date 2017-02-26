@@ -1,3 +1,4 @@
+
 //
 //  CardView.swift
 //  WAInvisionProjectSpaceExample
@@ -8,12 +9,68 @@
 
 import UIKit
 
-class CardView: UIView {
+protocol CardViewTemplateProtocol {
+  var imageSizeRatio: CGSize { get }
+  var logoCenterYRatio: CGFloat { get }
+  
+  func drawRect(rect: CGRect, mainImageView: UIView, logoView: UIView, bottomContainerView: UIView, parallaxValue: CGFloat)
+}
+
+struct CardViewTemplate: CardViewTemplateProtocol {
+  var logoCenterYRatio: CGFloat = 0.5
+  var imageSizeRatio: CGSize = CGSize(width: 1.3, height: 0.7)
+  
+  func drawRect(rect: CGRect, mainImageView: UIView, logoView: UIView, bottomContainerView: UIView, parallaxValue: CGFloat) {
+    
+    let maxOffset = -rect.width/3 - (rect.width/3)
+    let positionX = maxOffset * parallaxValue
+    
+    mainImageView.frame = CGRect(x: positionX, y: 0, width: rect.width * imageSizeRatio.width, height: rect.height * imageSizeRatio.height)
+    logoView.center = CGPoint(x: rect.width/2, y: mainImageView.frame.height * logoCenterYRatio)
+    
+    bottomContainerView.frame = CGRect(origin: CGPoint(x: 0, y:mainImageView.frame.height),
+                                       size: CGSize(width: rect.width, height: rect.height*(1-imageSizeRatio.height)))
+    
+    bottomContainerView.alpha = 1
+  }
+}
+
+struct FullScreenTemplate: CardViewTemplateProtocol {
+  var logoCenterYRatio: CGFloat = 0.2
+  var imageSizeRatio: CGSize = CGSize(width: 1.0, height: 0.5)
+  func drawRect(rect: CGRect, mainImageView: UIView, logoView: UIView, bottomContainerView: UIView, parallaxValue: CGFloat = 0) {
+    mainImageView.frame = CGRect(x: 0, y: 0, width: rect.width * imageSizeRatio.width, height: rect.height * imageSizeRatio.height)
+    logoView.center = CGPoint(x: rect.width/2, y: mainImageView.frame.height * logoCenterYRatio)
+    bottomContainerView.frame = CGRect(origin: CGPoint(x: 0, y:mainImageView.frame.height),
+                                       size: CGSize(width: rect.width, height: rect.height*(1-imageSizeRatio.height)))
+    bottomContainerView.alpha = 0
+  }
+}
+
+
+protocol CardViewProtocol {
+  var isFullScreen: Bool { get set }
+  
+}
+
+//  var
+//  var currentFrame: CGRect { get }
+//  func copyCardView() -> CardView
+//  
+//  
+////  var imageHeightRatio: CGFloat { get set }
+////  var logoCenterYRatio: CGFloat { get set }
+////  
+////  var mainImageFrame: CGRect { get set }
+//}
+
+
+class CardView: UIView, CardViewProtocol, NSCopying {
   
   var contentView = UIView()
   var mainImageView = UIImageView()
   var logoImageView = UIImageView()
-  var containerBottomView = UIView()
+  var bottomContainerView = UIView()
   private var titleLabel = UILabel()
   private var nbOfProjectsLabel = UILabel()
   
@@ -27,14 +84,23 @@ class CardView: UIView {
   var imageHeightRatio: CGFloat = 0.7
   var logoCenterYRatio: CGFloat = 0.5
   
+  var parallax: CGFloat = 0 {
+    didSet {
+      layoutSubviews()
+    }
+  }
+
+  var isFullScreen: Bool = false
+  
   override init(frame: CGRect) {
     super.init(frame: frame)
     backgroundColor = UIColor.white
     
+    layer.shouldRasterize = false
     layer.cornerRadius = cornerRadius
     layer.shadowColor = UIColor.black.cgColor
-    layer.shadowOffset = CGSize(width:0, height:10)
     layer.shadowRadius = 10
+    layer.shadowOffset = CGSize(width:0, height:10)
     layer.shadowOpacity = 0.1
     layer.masksToBounds = false
     
@@ -42,6 +108,7 @@ class CardView: UIView {
     contentView.layer.masksToBounds = true
     contentView.layer.cornerRadius = cornerRadius
     
+    mainImageView.frame = CGRect(x: 0, y: 0, width: bounds.width + offset, height: 0)
     mainImageView.contentMode = .scaleAspectFill
     mainImageView.layer.masksToBounds = true
     
@@ -49,12 +116,8 @@ class CardView: UIView {
     logoImageView.layer.cornerRadius = 12
     logoImageView.layer.masksToBounds = true
     logoImageView.frame.size = logoSize
-    logoImageView.layer.shadowColor = UIColor.black.cgColor
-    logoImageView.layer.shadowOffset = CGSize(width:0, height:2)
-    logoImageView.layer.shadowRadius = 5
-    logoImageView.layer.shadowOpacity = 0.3
     
-    containerBottomView.layer.masksToBounds = true
+    bottomContainerView.layer.masksToBounds = true
     
     titleLabel.textColor = UIColor.gray
     titleLabel.font = UIFont(name: "Helvetica-Bold", size: 18)
@@ -63,9 +126,9 @@ class CardView: UIView {
     
     contentView.addSubview(mainImageView)
     contentView.addSubview(logoImageView)
-    contentView.addSubview(containerBottomView)
-    containerBottomView.addSubview(titleLabel)
-    containerBottomView.addSubview(nbOfProjectsLabel)
+    contentView.addSubview(bottomContainerView)
+    bottomContainerView.addSubview(titleLabel)
+    bottomContainerView.addSubview(nbOfProjectsLabel)
     
     addSubview(contentView)
   }
@@ -91,31 +154,32 @@ class CardView: UIView {
     updateFrames()
   }
   
-  var isMainImageAnimationEnable: Bool = true
-  
   func updateFrames() {
+    
     layer.cornerRadius  = cornerRadius
+    
     contentView.layer.cornerRadius = cornerRadius
     contentView.frame = bounds
-    
-    let imageHeight = contentView.frame.height*imageHeightRatio
-    
-    if isMainImageAnimationEnable {
-      var mainFrame = mainImageView.frame
-      mainFrame.size = CGSize(width: bounds.width + offset, height: imageHeight)
-      mainImageView.frame = mainFrame
+
+    if isFullScreen {
+      let template = FullScreenTemplate()
+      template.drawRect(rect: self.frame, mainImageView: mainImageView, logoView: logoImageView, bottomContainerView: bottomContainerView)
+    } else {
+      let template = CardViewTemplate()
+      template.drawRect(rect: self.frame, mainImageView: mainImageView, logoView: logoImageView, bottomContainerView: bottomContainerView,parallaxValue: parallax)
     }
     
-    logoImageView.center = CGPoint(x: contentView.frame.width/2, y: imageHeight*logoCenterYRatio )
-    containerBottomView.frame = CGRect(origin: CGPoint(x: 0, y:imageHeight),
-                                       size: CGSize(width: contentView.frame.width, height: contentView.frame.height*(1-imageHeightRatio)))
-    
-    titleLabel.frame.origin = CGPoint(x: paddingLeft, y: containerBottomView.frame.height/2 - (titleLabel.frame.height + verticalPadding))
-    nbOfProjectsLabel.frame.origin = CGPoint(x: paddingLeft, y: containerBottomView.frame.height/2 + verticalPadding)
+    titleLabel.frame.origin = CGPoint(x: paddingLeft, y: bottomContainerView.frame.height/2 - (titleLabel.frame.height + verticalPadding))
+    nbOfProjectsLabel.frame.origin = CGPoint(x: paddingLeft, y: bottomContainerView.frame.height/2 + verticalPadding)
   }
   
-  override func copy() -> Any {
-    let instance =  CardView(frame: self.frame)
+  func copyCardView() -> CardView {
+    return self.copy() as! CardView
+  }
+  
+  func copy(with zone: NSZone? = nil) -> Any {
+    let instance = CardView(frame: self.frame)
+    
     instance.contentView.frame = self.contentView.frame
     
     if let mainImage = self.mainImageView.image, let copyMain = mainImage.cgImage?.copy() {
@@ -130,7 +194,7 @@ class CardView: UIView {
       instance.logoImageView.frame = self.logoImageView.frame
     }
     
-    instance.containerBottomView.frame = self.containerBottomView.frame
+    instance.bottomContainerView.frame = self.bottomContainerView.frame
     
     instance.titleLabel.text = self.titleLabel.text
     instance.titleLabel.frame = self.titleLabel.frame
@@ -138,6 +202,9 @@ class CardView: UIView {
     instance.nbOfProjectsLabel.text = self.nbOfProjectsLabel.text
     instance.nbOfProjectsLabel.frame = self.nbOfProjectsLabel.frame
     
+    instance.parallax = parallax
     return instance
+
   }
+  
 }

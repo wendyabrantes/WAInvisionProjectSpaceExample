@@ -27,6 +27,7 @@ class InvisionProjectDetailViewController: UIViewController {
     super.viewDidLoad()
     
     cardView.frame.size = view.bounds.size
+    cardView.isFullScreen = true
     cardView.cornerRadius = 0.0
     cardView.imageHeightRatio = 0.5
     cardView.logoCenterYRatio = 0.3
