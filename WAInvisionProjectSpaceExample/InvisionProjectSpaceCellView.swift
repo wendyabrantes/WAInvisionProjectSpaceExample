@@ -55,6 +55,7 @@ class InvisionProjectSpaceViewCell : UICollectionViewCell, CardViewProtocol, NSC
   }
   
   func copy(with zone: NSZone? = nil) -> Any {
+    //copy the exising cardView and replace it on the screen
     let cardView = self.cardView.copy() as! CardView
     let instance = InvisionProjectSpaceViewCell(frame: self.frame)
     instance.cardView.removeFromSuperview()

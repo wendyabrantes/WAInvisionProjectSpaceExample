@@ -50,20 +50,7 @@ struct FullScreenTemplate: CardViewTemplateProtocol {
 
 protocol CardViewProtocol {
   var isFullScreen: Bool { get set }
-  
 }
-
-//  var
-//  var currentFrame: CGRect { get }
-//  func copyCardView() -> CardView
-//  
-//  
-////  var imageHeightRatio: CGFloat { get set }
-////  var logoCenterYRatio: CGFloat { get set }
-////  
-////  var mainImageFrame: CGRect { get set }
-//}
-
 
 class CardView: UIView, CardViewProtocol, NSCopying {
   
@@ -151,13 +138,7 @@ class CardView: UIView, CardViewProtocol, NSCopying {
   
   override func layoutSubviews() {
     super.layoutSubviews()
-    updateFrames()
-  }
-  
-  func updateFrames() {
-    
     layer.cornerRadius  = cornerRadius
-    
     contentView.layer.cornerRadius = cornerRadius
     contentView.frame = bounds
 

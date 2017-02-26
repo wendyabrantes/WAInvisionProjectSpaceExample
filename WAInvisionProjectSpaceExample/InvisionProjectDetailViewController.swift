@@ -37,7 +37,7 @@ class InvisionProjectDetailViewController: UIViewController {
 
     view.addSubview(cardView)
     
-    cardView.updateFrames()
+    cardView.layoutSubviews()
   }
   
   override func viewWillAppear(_ animated: Bool) {

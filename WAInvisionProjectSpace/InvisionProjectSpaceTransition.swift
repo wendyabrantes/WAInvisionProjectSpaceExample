@@ -57,28 +57,31 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     let finalFrame = transitionContext.finalFrame(for: toVC)
     toVC.view.frame = finalFrame
     
+    //1. clone visible cells and get a reference to the selected cell
     let copyCells = copyVisibleCells(visibleCells: fromVC.collectionView!.visibleCells, currentSelected: fromVC.selectedCell)
     
     for cell in copyCells.cells {
       if let globalFrame = fromVC.collectionView?.convert(cell.frame, to: nil) {
         cell.frame = globalFrame
       }
+      //2. add the cell to the temporary container view
       containerView.addSubview(cell)
     }
     
+    //3. hide the current collection view
     fromVC.view.isHidden = true
     UIViewPropertyAnimator.runningPropertyAnimator(withDuration: duration,
                                                    delay: 0.0,
                                                    options: [.curveEaseOut, .layoutSubviews],
                                                    animations: {
                                                     
-                                                    //set the template to fullscreen and animate the frame
+                                                    //4. set the template to be fullscreen and animate the frame
                                                     if let selectedCell = copyCells.selectedCell {
                                                       selectedCell.isFullScreen = true
                                                       selectedCell.frame = finalFrame
                                                     }
                                                     
-                                                    //We slide all other cells off the screen
+                                                    //5. We slide all other cells off the screen
                                                     for cell in copyCells.cells {
                                                       if cell != copyCells.selectedCell {
                                                         let instersection = finalFrame.intersection(cell.frame)
@@ -105,7 +108,6 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     
     let duration = transitionDuration(using: transitionContext)
     let containerView = transitionContext.containerView
-
     let finalFrame = transitionContext.finalFrame(for: toVC)
     toVC.view.frame = finalFrame
     
@@ -114,13 +116,13 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     var selectedOriginalFrame: CGRect = .zero
     if let selectedCell = copyCells.selectedCell {
       selectedOriginalFrame = toVC.collectionView?.convert(selectedCell.frame, to: nil) ?? .zero
-      //we set the current selected cell to full screen template
+      //1. we set the current selected cell to full screen template
       selectedCell.isFullScreen = true
       selectedCell.frame = fromVC.view.frame
     }
     
     for cell in copyCells.cells {
-      //all other cell need to be slide of the screen
+      //2. all other cell need to be slide of the screen
       if cell != copyCells.selectedCell {
         if let globalFrame = toVC.collectionView?.convert(cell.frame, to: nil) {
           cell.frame = globalFrame
@@ -138,13 +140,14 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     
     fromVC.view.removeFromSuperview()
     toVC.view.isHidden = true
+    //3. layout the selected cell for Full screen state
     copyCells.selectedCell?.layoutSubviews()
     UIViewPropertyAnimator.runningPropertyAnimator(withDuration: duration,
                                                    delay: 0.0,
                                                    options: [.curveEaseOut, .layoutSubviews],
                                                    animations: {
 
-                                                    //animate to card view state
+                                                    //3. set the card view template and animate the frame
                                                     if let selectedCell = copyCells.selectedCell {
                                                       selectedCell.isFullScreen = false
                                                       selectedCell.frame = selectedOriginalFrame
@@ -164,3 +167,8 @@ class InvisionProjectSpaceTransition: NSObject, UIViewControllerAnimatedTransiti
     }
   }
 }
+
+
+
+
+
